@@ -11,7 +11,7 @@ const getLanguages = async (req, res) => {
     const contenido = data.toString();
     //separar todo en lineas independientes
     const lineas = contenido.split(/\r?\n/);
-    
+
     //array donde se guardaran los objetos
     let lenguajes = {};
     for (let linea of lineas) {
@@ -48,24 +48,34 @@ const getAuthorByLanguage = async (req, res) => {
     let lenguajes = {};
     for (let linea of lineas) {
       //eliminando ", espacios en blanco y separando columnas
-      let lenguaje = linea.replace('"', "").replace(" ", "").split(",");
+      let lenguaje = linea.replace('"', "").split(",");
       if (lenguaje[0] == undefined || lenguaje[1] == undefined) {
         continue;
       }
       //Primer columna, silabas
       let key = lenguaje[0];
       //Segunda columna, palabras
-      let value = lenguaje[1].split(";");
+      let arrayValue = lenguaje[1].split(";");
+      let value = [];
+      arrayValue.forEach((item) => {
+        value.push(item.trim());
+        
+      });
       //Busqueda de valor en columna de palabras
-      let indexValue = lenguaje[1].indexOf(req.params.language);
+      let indexValue = value.filter(item => {
+        return item == req.params.language
+      });
 
-      if (indexValue != -1 || key == req.params.language) {
+      if (indexValue == req.params.language || key == req.params.language) {
         lenguajes[key] = value;
       }
     }
+
+    console.log(lenguajes)
     //objeto donde se guardaran los paises que poseen x lenguaje
     let countries = {};
     for (let lenguaje in lenguajes) {
+      console.log(lenguaje)
       let endpointCountries =
         "http://countries:5000/api/v2/countries/language/" + lenguaje;
       let apiCountries = await consumeAPI(endpointCountries);
